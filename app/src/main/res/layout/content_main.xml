@@ -124,7 +124,7 @@ tools:showIn="@layout/activity_main">
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:weightSum="2">
+                    android:weightSum="3">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -153,12 +153,16 @@ tools:showIn="@layout/activity_main">
                             android:gravity="center_horizontal"
                             />
                     </LinearLayout>
+                    
+    
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_weight="1"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        >
+        
                         <NumberPicker
                             android:theme="@style/CustomPicker"
                             android:id="@+id/min_picker"
@@ -169,6 +173,7 @@ tools:showIn="@layout/activity_main">
                             android:gravity="center_horizontal"
                             android:descendantFocusability="blocksDescendants"
                             />
+        
                         <androidx.appcompat.widget.AppCompatTextView
                             android:id="@+id/min_text"
                             android:layout_width="wrap_content"
@@ -177,7 +182,39 @@ tools:showIn="@layout/activity_main">
                             android:textSize="16sp"
                             android:layout_marginLeft="6dp"
                             android:layout_marginRight="6dp"
-                            android:gravity="center_horizontal"/>
+                            android:gravity="center_horizontal"
+                            />
+                    </LinearLayout>
+    
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        >
+        
+                        <NumberPicker
+                            android:theme="@style/CustomPicker"
+                            android:id="@+id/wait_temp_picker"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="3dp"
+                            android:layout_marginRight="3dp"
+                            android:gravity="center_horizontal"
+                            android:descendantFocusability="blocksDescendants"
+                            />
+        
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:id="@+id/wait_temp_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/primaryText"
+                            android:textSize="16sp"
+                            android:layout_marginLeft="6dp"
+                            android:layout_marginRight="6dp"
+                            android:gravity="center_horizontal"
+                            />
                     </LinearLayout>
                 </LinearLayout>
 

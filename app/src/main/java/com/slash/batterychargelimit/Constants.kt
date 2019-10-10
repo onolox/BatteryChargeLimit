@@ -20,6 +20,7 @@ object Constants {
 
     const val LIMIT = "limit"
     const val MIN = "min"
+    const val  WAITTEMP = "waittemp"
     const val CHARGE_LIMIT_ENABLED = "enable"
     const val DISABLE_CHARGE_NOW = "disable_charge_now"
     const val NOTIFICATION_LIVE = "notificationLive"

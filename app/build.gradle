@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(rootProject.file("private/keystore.properties")))
+keystoreProperties.load(new FileInputStream(rootProject.file("keystore.properties")))
 
 android {
     compileSdkVersion 28
@@ -11,7 +11,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 24
-        versionName "1.2.0"
+        versionName "2.2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "BatteryChargeLimit-$versionName")
     }
@@ -52,15 +52,15 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 //    implementation 'com.android.support:appcompat-v7:28.0.0'
 //    implementation 'com.android.support:design:28.0.0'
 //    implementation 'com.android.support:preference-v14:28.0.0'
 //    implementation 'com.android.support:cardview-v7:28.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha03'
-    implementation 'androidx.preference:preference:1.1.0-alpha03'
+    implementation 'com.google.android.material:material:1.1.0-alpha10'
+    implementation 'androidx.preference:preference:1.0.0'
     implementation 'eu.chainfire:libsuperuser:1.0.0.+'
     implementation 'com.google.code.gson:gson:2.8.5'
     testImplementation 'junit:junit:4.12'

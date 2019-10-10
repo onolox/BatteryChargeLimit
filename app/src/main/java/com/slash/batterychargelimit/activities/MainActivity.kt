@@ -29,6 +29,7 @@ import com.slash.batterychargelimit.Constants.MIN
 import com.slash.batterychargelimit.Constants.NOTIFICATION_SOUND
 import com.slash.batterychargelimit.Constants.SETTINGS
 import com.slash.batterychargelimit.Constants.SETTINGS_VERSION
+import com.slash.batterychargelimit.Constants.WAITTEMP
 import com.slash.batterychargelimit.ForegroundService
 import com.slash.batterychargelimit.R
 import com.slash.batterychargelimit.Utils
@@ -39,33 +40,34 @@ import com.slash.batterychargelimit.settings.PrefsFragment
 import eu.chainfire.libsuperuser.Shell
 import java.lang.ref.WeakReference
 
-
 class MainActivity : AppCompatActivity() {
-    private val minPicker by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.min_picker) as NumberPicker}
-    private val minText by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.min_text) as TextView}
-    private val maxPicker by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.max_picker) as NumberPicker}
-    private val maxText by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.max_text) as TextView}
-    private val settings by lazy(LazyThreadSafetyMode.NONE) {getSharedPreferences(SETTINGS, 0)}
-    private val statusText by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.status) as TextView}
-    private val batteryInfo by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.battery_info) as TextView}
-    private val enableSwitch by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.enable_switch) as Switch}
-    private val disableChargeSwitch by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.disable_charge_switch) as Switch}
-    private val limitByVoltageSwitch by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.limit_by_voltage) as Switch}
-    private val customThresholdEditView by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.voltage_threshold) as EditText}
-    private val currentThresholdTextView by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.current_voltage_threshold) as TextView}
-    private val defaultThresholdTextView by lazy(LazyThreadSafetyMode.NONE) {findViewById(R.id.default_voltage_threshold) as TextView}
+    private val minPicker by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.min_picker) as NumberPicker }
+    private val minText by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.min_text) as TextView }
+    private val maxPicker by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.max_picker) as NumberPicker }
+    private val maxText by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.max_text) as TextView }
+    private val waitTempPicker by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.wait_temp_picker) as NumberPicker }
+    private val waitTempText by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.wait_temp_text) as TextView }
+    private val settings by lazy(LazyThreadSafetyMode.NONE) { getSharedPreferences(SETTINGS, 0) }
+    private val statusText by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.status) as TextView }
+    private val batteryInfo by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.battery_info) as TextView }
+    private val enableSwitch by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.enable_switch) as Switch }
+    private val disableChargeSwitch by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.disable_charge_switch) as Switch }
+    private val limitByVoltageSwitch by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.limit_by_voltage) as Switch }
+    private val customThresholdEditView by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.voltage_threshold) as EditText }
+    private val currentThresholdTextView by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.current_voltage_threshold) as TextView }
+    private val defaultThresholdTextView by lazy(LazyThreadSafetyMode.NONE) { findViewById(R.id.default_voltage_threshold) as TextView }
     private var initComplete = false
     private var preferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
-    private lateinit var currentThreshold : String
+    private lateinit var currentThreshold: String
     private val mHandler = MainHandler(this)
     private lateinit var prefs: SharedPreferences
-
-    private class MainHandler(activity:MainActivity):Handler() {
-        private val mActivity by lazy(LazyThreadSafetyMode.NONE) {WeakReference(activity)}
-        override fun handleMessage(msg:Message) {
+    
+    private class MainHandler(activity: MainActivity) : Handler() {
+        private val mActivity by lazy(LazyThreadSafetyMode.NONE) { WeakReference(activity) }
+        override fun handleMessage(msg: Message) {
             val activity = mActivity.get()
             if (activity != null) {
-                when(msg.what) {
+                when (msg.what) {
                     MSG_UPDATE_VOLTAGE_THRESHOLD -> {
                         val voltage = msg.data.getString(VOLTAGE_THRESHOLD)
                         activity.currentThreshold = voltage!!
@@ -79,16 +81,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = Utils.getPrefs(this)
         Utils.setTheme(this)
-
+        
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-
+        
         // Exit immediately if no root support
         if (!Shell.SU.available()) {
             showNoRootDialog()
@@ -102,15 +104,12 @@ class MainActivity : AppCompatActivity() {
         //The onCreate() process was not stopped via return, UI elements should be available
         initComplete = true
     }
-
+    
     private fun showNoRootDialog() {
         Toast.makeText(this, R.string.root_denied, Toast.LENGTH_SHORT)
-        AlertDialog.Builder(this@MainActivity)
-                .setMessage(R.string.root_denied)
-                .setCancelable(false)
-                .setPositiveButton(R.string.ok) { _, _ -> finish() }.create().show()
+        AlertDialog.Builder(this@MainActivity).setMessage(R.string.root_denied).setCancelable(false).setPositiveButton(R.string.ok) { _, _ -> finish() }.create().show()
     }
-
+    
     private fun checkForControlFiles() {
         prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         if (!prefs.contains(PrefsFragment.KEY_CONTROL_FILE)) {
@@ -124,24 +123,22 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 if (!found) {
-                    AlertDialog.Builder(this@MainActivity)
-                            .setMessage(R.string.device_not_supported)
-                            .setCancelable(false)
-                            .setPositiveButton(R.string.ok) { _, _ -> finish() }.create().show()
+                    AlertDialog.Builder(this@MainActivity).setMessage(R.string.device_not_supported).setCancelable(false).setPositiveButton(R.string.ok) { _, _ -> finish() }.create().show()
                 }
             })
         }
     }
-
+    
     private fun updateSettingsVersion() {
         val settingsVersion = prefs.getInt(SETTINGS_VERSION, 0)
         var versionCode = 0
         try {
             versionCode = packageManager.getPackageInfo(packageName, 0).versionCode
-        } catch (e: PackageManager.NameNotFoundException) {
+        }
+        catch (e: PackageManager.NameNotFoundException) {
             Log.wtf(TAG, e)
         }
-
+        
         if (settingsVersion < versionCode) {
             when (settingsVersion) {
                 0, 1, 2, 3, 4 -> {
@@ -175,25 +172,23 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putInt(SETTINGS_VERSION, versionCode).apply()
         }
     }
-
+    
     private fun whitelistIfFirstStart() {
         if (!prefs.getBoolean(getString(R.string.previously_started), false)) {
             // whitelist App for Doze Mode
-            Utils.suShell.addCommand("dumpsys deviceidle whitelist +com.slash.batterychargelimit",
-                    0) { _, _, _ ->
+            Utils.suShell.addCommand("dumpsys deviceidle whitelist +com.slash.batterychargelimit", 0) { _, _, _ ->
                 prefs.edit().putBoolean(getString(R.string.previously_started), true).apply()
             }
         }
     }
-
+    
     private fun loadUi() {
         preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                PrefsFragment.KEY_TEMP_FAHRENHEIT -> updateBatteryInfo(baseContext.registerReceiver(null,
-                        IntentFilter(Intent.ACTION_BATTERY_CHANGED))!!)
+                PrefsFragment.KEY_TEMP_FAHRENHEIT -> updateBatteryInfo(baseContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))!!)
             }
         }
-
+        
         customThresholdEditView.setOnEditorActionListener { v, actionId, event ->
             var handled = false
             if (actionId == EditorInfo.IME_ACTION_GO) {
@@ -203,32 +198,32 @@ class MainActivity : AppCompatActivity() {
             }
             handled
         }
-
+        
         Utils.getCurrentVoltageThresholdAsync(this@MainActivity, mHandler)
-
-        currentThreshold = settings.getString(Constants.DEFAULT_VOLTAGE_LIMIT, "4300")!!
-
+        
+        currentThreshold = settings.getString(Constants.DEFAULT_VOLTAGE_LIMIT, "4150")!!
+        
         customThresholdEditView.setText(settings.getString(Constants.CUSTOM_VOLTAGE_LIMIT, "NA"))
         defaultThresholdTextView.text = settings.getString(Constants.DEFAULT_VOLTAGE_LIMIT, "NA")
-
+        
         customThresholdEditView.onFocusChangeListener = object : OnFocusChangeListener {
             override fun onFocusChange(v: View, hasFocus: Boolean) {
                 if (!hasFocus) {
                     val newThreshold = customThresholdEditView.text.toString()
                     if (Utils.isValidVoltageThreshold(newThreshold, currentThreshold)) {
                         settings.edit().putString(Constants.CUSTOM_VOLTAGE_LIMIT, newThreshold).apply()
-                        Utils.setVoltageThreshold(null, true, this@MainActivity , mHandler)
+                        Utils.setVoltageThreshold(null, true, this@MainActivity, mHandler)
                     }
                 }
             }
         }
-
+        
         val isChargeLimitEnabled = settings.getBoolean(CHARGE_LIMIT_ENABLED, false)
-
+        
         if (isChargeLimitEnabled && Utils.isPhonePluggedIn(this)) {
             this.startService(Intent(this, ForegroundService::class.java))
         }
-
+        
         val resetBatteryStats_Button = findViewById(R.id.reset_battery_stats) as Button
 //        val autoResetSwitch = findViewById(R.id.auto_stats_reset) as CheckBox
 //        val notificationSound = findViewById(R.id.notification_sound) as CheckBox
@@ -238,7 +233,9 @@ class MainActivity : AppCompatActivity() {
         maxPicker.minValue = Constants.MIN_ALLOWED_LIMIT_PC
         maxPicker.maxValue = Constants.MAX_ALLOWED_LIMIT_PC
         minPicker.minValue = 0
-
+        waitTempPicker.minValue = 22
+        waitTempPicker.maxValue = 25
+        
         enableSwitch.setOnCheckedChangeListener(switchListener)
         disableChargeSwitch.setOnCheckedChangeListener(switchListener)
         limitByVoltageSwitch.setOnCheckedChangeListener(switchListener)
@@ -253,38 +250,44 @@ class MainActivity : AppCompatActivity() {
                 Utils.startServiceIfLimitEnabled(this)
             }
         }
-
+        
         minPicker.setOnValueChangedListener { _, _, min ->
             settings.edit().putInt(MIN, min).apply()
             updateMinText(min)
+        }
+        
+        waitTempPicker.setOnValueChangedListener { _, _, temp ->
+            settings.edit().putInt(WAITTEMP, temp).apply()
+            updateMinText(temp)
         }
         resetBatteryStats_Button.setOnClickListener { Utils.resetBatteryStats(this@MainActivity) }
 //        autoResetSwitch.setOnCheckedChangeListener { _, isChecked ->
 //            settings.edit().putBoolean(AUTO_RESET_STATS, isChecked).apply() }
 //        notificationSound.setOnCheckedChangeListener { _, isChecked ->
 //            settings.edit().putBoolean(NOTIFICATION_SOUND, isChecked).apply() }
-
+        
         setStatusCTRLFileData()
     }
-
-    private fun hideKeybord () {
+    
+    private fun hideKeybord() {
         val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         if (inputManager.isAcceptingText) {
             inputManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
         }
     }
-
+    
     //OnCheckedChangeListener for Switch elements
     private val switchListener = object : CompoundButton.OnCheckedChangeListener {
         val context: Context = this@MainActivity
         override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-            when(buttonView.id) {
+            when (buttonView.id) {
                 R.id.enable_switch -> {
                     settings.edit().putBoolean(CHARGE_LIMIT_ENABLED, isChecked).apply()
                     if (isChecked) {
                         Utils.startServiceIfLimitEnabled(context)
                         disableSwitches(listOf(disableChargeSwitch, limitByVoltageSwitch))
-                    } else {
+                    }
+                    else {
                         Utils.stopService(context)
                         enableSwitches(listOf(disableChargeSwitch, limitByVoltageSwitch))
                     }
@@ -295,7 +298,8 @@ class MainActivity : AppCompatActivity() {
                         Utils.changeState(this@MainActivity, Utils.CHARGE_OFF)
                         settings.edit().putBoolean(DISABLE_CHARGE_NOW, true).apply()
                         disableSwitches(listOf(enableSwitch, limitByVoltageSwitch))
-                    } else {
+                    }
+                    else {
                         Utils.changeState(this@MainActivity, Utils.CHARGE_ON)
                         settings.edit().putBoolean(DISABLE_CHARGE_NOW, false).apply()
                         enableSwitches(listOf(enableSwitch, limitByVoltageSwitch))
@@ -303,13 +307,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.limit_by_voltage -> {
                     if (isChecked) {
-                        Utils.setVoltageThreshold(settings.getString(Constants.CUSTOM_VOLTAGE_LIMIT, Constants.DEFAULT_VOLTAGE_THRESHOLD_MV),
-                                false, this@MainActivity, mHandler)
+                        Utils.setVoltageThreshold(settings.getString(Constants.CUSTOM_VOLTAGE_LIMIT, Constants.DEFAULT_VOLTAGE_THRESHOLD_MV), false, this@MainActivity, mHandler)
                         settings.edit().putBoolean(LIMIT_BY_VOLTAGE, true).apply()
                         disableSwitches(listOf(enableSwitch, disableChargeSwitch))
-                    } else {
-                        Utils.setVoltageThreshold(settings.getString(Constants.DEFAULT_VOLTAGE_LIMIT, "4300"),
-                                false, this@MainActivity, mHandler)
+                    }
+                    else {
+                        Utils.setVoltageThreshold(settings.getString(Constants.DEFAULT_VOLTAGE_LIMIT, "4300"), false, this@MainActivity, mHandler)
                         settings.edit().putBoolean(LIMIT_BY_VOLTAGE, false).apply()
                         enableSwitches(listOf(enableSwitch, disableChargeSwitch))
                     }
@@ -317,32 +320,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    
     fun disableSwitches(switches: List<Switch>) {
         for (switch in switches) {
             switch.isEnabled = false
             switch.setTextColor(getColorFromAttr(R.attr.secondaryText, this))
         }
     }
-
+    
     fun enableSwitches(switches: List<Switch>) {
         for (switch in switches) {
             switch.isEnabled = true
             switch.setTextColor(getColorFromAttr(R.attr.primaryText, this))
         }
     }
-
+    
     fun getColorFromAttr(attr: Int, context: Context): Int {
         val typedValue = TypedValue()
         context.theme.resolveAttribute(attr, typedValue, true)
         val color = typedValue.data
         return color
     }
-
+    
     //to update battery status on UI
     private val charging = object : BroadcastReceiver() {
         private var previousStatus = BatteryManager.BATTERY_STATUS_UNKNOWN
-
+        
         override fun onReceive(context: Context, intent: Intent) {
             val currentStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN)
             if (currentStatus != previousStatus) {
@@ -373,52 +376,47 @@ class MainActivity : AppCompatActivity() {
             updateBatteryInfo(intent)
         }
     }
-
+    
     private fun updateBatteryInfo(intent: Intent) {
-        batteryInfo.text = String.format(" (%s)", Utils.getBatteryInfo(this, intent,
-                prefs.getBoolean(PrefsFragment.KEY_TEMP_FAHRENHEIT, false)))
+        batteryInfo.text = String.format(" (%s)", Utils.getBatteryInfo(this, intent, prefs.getBoolean(PrefsFragment.KEY_TEMP_FAHRENHEIT, false)))
     }
-
+    
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
-
+    
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.about -> if (!AboutFragment.aboutVisible()) {
                 supportActionBar!!.title = getString(R.string.about)
                 supportFragmentManager.popBackStack()
-                supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, AboutFragment())
-                        .addToBackStack(null).commit()
+                supportFragmentManager.beginTransaction().replace(R.id.fragment_container, AboutFragment()).addToBackStack(null).commit()
             }
             R.id.action_settings -> if (!PrefsFragment.settingsVisible()) {
                 supportActionBar!!.title = getString(R.string.action_settings)
                 CtrlFileHelper.validateFiles(this, Runnable {
                     supportFragmentManager.popBackStack()
-                    supportFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, PrefsFragment())
-                            .addToBackStack(null).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragment_container, PrefsFragment()).addToBackStack(null).commit()
                 })
             }
         }
         return true
     }
-
+    
     override fun onBackPressed() {
         super.onBackPressed()
         supportActionBar!!.title = getString(R.string.app_name)
     }
-
+    
     public override fun onStop() {
         if (initComplete) {
             unregisterReceiver(charging)
         }
         super.onStop()
     }
-
+    
     public override fun onStart() {
         super.onStart()
         if (initComplete) {
@@ -427,23 +425,22 @@ class MainActivity : AppCompatActivity() {
             updateUi()
         }
     }
-
+    
     override fun onDestroy() {
-        Utils.getPrefs(baseContext)
-                .unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+        Utils.getPrefs(baseContext).unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         // technically not necessary, but it prevents inlining of this required field
         // see end of https://developer.android.com/guide/topics/ui/settings.html#Listening
         preferenceChangeListener = null
         super.onDestroy()
     }
-
+    
     private fun updateMinText(min: Int) {
         when (min) {
             0 -> minText.setText(R.string.no_recharge)
             else -> minText.text = getString(R.string.recharge_below, min)
         }
     }
-
+    
     private fun updateUi() {
         enableSwitch.isChecked = settings.getBoolean(CHARGE_LIMIT_ENABLED, false)
         disableChargeSwitch.isChecked = settings.getBoolean(DISABLE_CHARGE_NOW, false)
@@ -455,17 +452,15 @@ class MainActivity : AppCompatActivity() {
         minPicker.maxValue = max
         minPicker.value = min
         updateMinText(min)
+        waitTempPicker.value = settings.getInt( WAITTEMP, 25)
+        
     }
-
+    
     fun setStatusCTRLFileData() {
         val statusCTRLData = findViewById(R.id.status_ctrl_data) as TextView
-        statusCTRLData.text = String.format("%s, %s, %s",
-                Utils.getCtrlFileData(this),
-                Utils.getCtrlEnabledData(this),
-                Utils.getCtrlDisabledData(this)
-        )
+        statusCTRLData.text = String.format("%s, %s, %s", Utils.getCtrlFileData(this), Utils.getCtrlEnabledData(this), Utils.getCtrlDisabledData(this))
     }
-
+    
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         const val MSG_UPDATE_VOLTAGE_THRESHOLD = 1

@@ -62,7 +62,7 @@ object Utils {
         return System.currentTimeMillis() <= changePending + tolerance
     }
 
-    var suShell: Shell.Interactive = Shell.Builder().setWantSTDERR(false).useSU().open()
+        var suShell: Shell.Interactive = Shell.Builder().setWantSTDERR(false).useSU().open()
 
     fun refreshSu() {
         suShell = Shell.Builder().setWantSTDERR(false).useSU().open()
@@ -163,6 +163,10 @@ object Utils {
         return context.getString(if (useFahrenheit) R.string.battery_info_F else R.string.battery_info_C,
                 batteryVoltage.toFloat() / 1000f,
                 if (useFahrenheit) 32f + batteryTemperature * 1.8f / 10f else batteryTemperature / 10f)
+    }
+
+    fun getBatteryTemp(intent: Intent): Int {
+        return intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1)
     }
 
 //    @SuppressLint("PrivateApi")
@@ -312,7 +316,7 @@ object Utils {
 
     fun setTheme(activity: Activity) {
         val preferences = getPrefs(activity)
-        val getTheme = preferences.getString(PrefsFragment.KEY_THEME, Constants.LIGHT)
+        val getTheme = preferences.getString(PrefsFragment.KEY_THEME, Constants.BLACK)
         var theme = R.style.AppThemeLight_NoActionBar
         when (getTheme) {
             Constants.LIGHT -> { theme = R.style.AppThemeLight_NoActionBar }
