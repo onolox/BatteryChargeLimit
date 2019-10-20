@@ -75,7 +75,7 @@ class ForegroundService : Service() {
             
             Handler().postDelayed({
                 checkTemp()
-            }, 120000)
+            }, 90000)
         }
     }
     
